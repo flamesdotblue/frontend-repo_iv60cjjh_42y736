@@ -2,6 +2,7 @@ import React from 'react';
 import Hero3D from './components/Hero3D';
 import ProblemVision from './components/ProblemVision';
 import HowItWorks from './components/HowItWorks';
+import RealtimeOpenSource from './components/RealtimeOpenSource';
 import ImpactFooter from './components/ImpactFooter';
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
       <Hero3D />
       <ProblemVision />
       <HowItWorks />
+      <RealtimeOpenSource />
       <ImpactFooter />
     </div>
   );

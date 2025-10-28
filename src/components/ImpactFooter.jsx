@@ -76,16 +76,28 @@ const ImpactFooter = () => {
           <div className="grid gap-6 md:grid-cols-2">
             <div>
               <p className="text-blue-100">Join a global community building the future of learning. Contribute code, content, and ideas.</p>
-              <a
-                href="https://github.com/"
-                target="_blank"
-                rel="noreferrer"
-                className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-2.5 font-semibold text-white/90 backdrop-blur transition hover:bg-white/10"
-              >
-                <Github className="h-5 w-5" />
-                Contribute on GitHub
-                <ArrowRight className="h-4 w-4" />
-              </a>
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <a
+                  href="https://opensource.google/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-2.5 font-semibold text-white/90 backdrop-blur transition hover:bg-white/10"
+                >
+                  <Globe className="h-5 w-5" />
+                  Explore Google Open Source
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+                <a
+                  href="https://github.com/explore"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-5 py-2.5 font-semibold text-white/90 backdrop-blur transition hover:bg-white/10"
+                >
+                  <Github className="h-5 w-5" />
+                  Contribute on GitHub
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+              </div>
             </div>
             <div className="relative h-44 w-full">
               {/* Simple glowing world map effect */}

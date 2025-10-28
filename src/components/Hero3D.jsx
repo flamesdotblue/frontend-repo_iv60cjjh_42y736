@@ -68,7 +68,9 @@ const Hero3D = () => {
               Try Demo
             </a>
             <a
-              href="#open-source"
+              href="https://opensource.google/"
+              target="_blank"
+              rel="noreferrer"
               className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-6 py-3 font-semibold text-white/90 backdrop-blur transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-cyan-300"
             >
               <Github className="h-5 w-5" />
