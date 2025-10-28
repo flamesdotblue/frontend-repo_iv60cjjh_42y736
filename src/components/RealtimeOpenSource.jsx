@@ -7,7 +7,7 @@ const repos = [
   { owner: 'vercel', name: 'next.js', label: 'vercel/next.js' },
 ];
 
-function useGitHubRepo(owner, name) {
+function useGitHubRepo(owner, name, paused) {
   const [data, setData] = useState({ stars: 0, forks: 0, issues: 0, loading: true, error: null, connected: false });
   const backoffRef = useRef(60000); // normal refresh every 60s
   const timeoutRef = useRef(null);
@@ -16,6 +16,12 @@ function useGitHubRepo(owner, name) {
     let mounted = true;
 
     async function fetchRepo() {
+      if (!mounted) return;
+      if (paused) {
+        // While paused, mark as disconnected but do not schedule fetches
+        setData((d) => ({ ...d, loading: false, connected: false }));
+        return;
+      }
       try {
         const res = await fetch(`https://api.github.com/repos/${owner}/${name}`);
         if (!res.ok) throw new Error('Network error');
@@ -40,7 +46,9 @@ function useGitHubRepo(owner, name) {
       } finally {
         if (!mounted) return;
         clearTimeout(timeoutRef.current);
-        timeoutRef.current = setTimeout(fetchRepo, backoffRef.current);
+        if (!paused) {
+          timeoutRef.current = setTimeout(fetchRepo, backoffRef.current);
+        }
       }
     }
 
@@ -49,6 +57,7 @@ function useGitHubRepo(owner, name) {
 
     // If the device comes back online, try immediately
     const handleOnline = () => {
+      if (paused) return;
       clearTimeout(timeoutRef.current);
       backoffRef.current = 60000; // reset to normal
       fetchRepo();
@@ -60,7 +69,7 @@ function useGitHubRepo(owner, name) {
       window.removeEventListener('online', handleOnline);
       clearTimeout(timeoutRef.current);
     };
-  }, [owner, name]);
+  }, [owner, name, paused]);
 
   return data;
 }
@@ -73,11 +82,15 @@ const Stat = ({ icon: Icon, value, label }) => (
   </div>
 );
 
-const ConnectionPill = ({ connected, loading }) => (
+const ConnectionPill = ({ connected, loading, paused }) => (
   <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${
-    loading ? 'border-blue-300/30 text-blue-100 bg-blue-400/10' : connected ? 'border-emerald-300/30 text-emerald-100 bg-emerald-400/10' : 'border-amber-300/30 text-amber-100 bg-amber-400/10'
+    paused ? 'border-amber-300/30 text-amber-100 bg-amber-400/10' : loading ? 'border-blue-300/30 text-blue-100 bg-blue-400/10' : connected ? 'border-emerald-300/30 text-emerald-100 bg-emerald-400/10' : 'border-amber-300/30 text-amber-100 bg-amber-400/10'
   }`}>
-    {loading ? (
+    {paused ? (
+      <>
+        <WifiOff className="h-3.5 w-3.5" /> Paused
+      </>
+    ) : loading ? (
       <>
         <Wifi className="h-3.5 w-3.5" /> Connecting…
       </>
@@ -93,15 +106,15 @@ const ConnectionPill = ({ connected, loading }) => (
   </span>
 );
 
-const RealtimeOpenSource = () => {
-  const a = useGitHubRepo(repos[0].owner, repos[0].name);
-  const b = useGitHubRepo(repos[1].owner, repos[1].name);
+const RealtimeOpenSource = ({ id = 'realtime', paused = false, onTogglePause }) => {
+  const a = useGitHubRepo(repos[0].owner, repos[0].name, paused);
+  const b = useGitHubRepo(repos[1].owner, repos[1].name, paused);
 
   const allLoading = a.loading || b.loading;
   const anyConnected = a.connected || b.connected;
 
   return (
-    <section aria-label="Realtime Open Source" className="relative w-full bg-[#07101a] py-16 text-white">
+    <section id={id} aria-label="Realtime Open Source" className="relative w-full bg-[#07101a] py-16 text-white">
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,rgba(56,189,248,0.08),transparent_60%)]" />
       <div className="relative mx-auto max-w-7xl px-6">
         <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
@@ -110,7 +123,21 @@ const RealtimeOpenSource = () => {
             <p className="mt-2 max-w-2xl text-blue-100">Live GitHub stats and direct links to contribute. Connects automatically with smart retries — no setup needed.</p>
           </div>
           <div className="flex items-center gap-3">
-            <ConnectionPill connected={anyConnected} loading={allLoading} />
+            <ConnectionPill connected={anyConnected} loading={allLoading} paused={paused} />
+            <button
+              onClick={() => onTogglePause?.(!paused)}
+              className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold text-white/90 backdrop-blur transition hover:bg-white/10"
+            >
+              {paused ? (
+                <>
+                  <Wifi className="h-4 w-4" /> Resume
+                </>
+              ) : (
+                <>
+                  <WifiOff className="h-4 w-4" /> Pause
+                </>
+              )}
+            </button>
             <a href="https://opensource.google/" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold text-white/90 backdrop-blur transition hover:bg-white/10">
               <Globe className="h-4 w-4" /> Explore Google Open Source
             </a>
